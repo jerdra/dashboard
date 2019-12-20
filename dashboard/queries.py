@@ -54,6 +54,43 @@ def get_timepoint(name, bids_ses=None, study=None):
                      study_timepoints_table.c.study == study))
     return query.first()
 
+def get_study_timepoints(study, site=None, phantoms=False):
+    """Obtains all timepoints from Studies model
+
+    Args:
+        study: Study codename used in DATMAN
+        site: Additionally apply a filter on the timepoints for a specific site
+        phantoms: Optional argument to keep phantoms in record
+
+    Returns:
+        A list of timepoint names from the specified study. For example:
+
+        ['PACTMD_CMH_ABCD', 'PACTMD_CMH_DEFG', ... ]
+
+        If the site optional arugment is used, then only timepoints
+        belonging to site will be returned in a list
+
+    Raises:
+        IndexError if the provided study does not exist
+
+    """
+
+    try:
+        study = get_study(study)[0]
+    except IndexError:
+        logger.error('Study {} does not exist!'.format(study))
+        return None
+
+    if site:
+        timepoints = [s for s in study.timepoints.all() if s.site.name == site]
+    else:
+        timepoints = [s for s in study.timepoints.all()]
+
+    if not phantoms:
+        timepoints = [s for s in timepoints if not s.is_phantom]
+
+    return [s.name for s in timepoints]
+
 def find_sessions(search_str):
     """
     Used by the dashboard's search bar and so must work around fuzzy user
