@@ -5,6 +5,7 @@ from flask import url_for
 from flask_mail import Message
 
 from dashboard import app, mail, SENDER, ADMINS, DASH_SUPPORT
+from dashboard.monitors import add_monitor
 
 logger = logging.getLogger(__name__)
 
@@ -124,4 +125,5 @@ def qc_notification_email(user, study, current_tp, remain_tp=None):
     body += "\n\nIf you wrongly recieved this email, " \
             "please contact staff at the Kimel Lab"
 
-    send_email(subject, body, recipient=user.email)
+    kwargs = {'recipient': user.email}
+    add_monitor(send_email, [subject, body], input_kwargs=kwargs)
